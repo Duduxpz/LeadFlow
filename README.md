@@ -67,3 +67,4 @@ npm run dev:frontend
 - [x] Tags Automáticas: "Interessado", "Curioso", "Orçamento", "Fechamento"
 - [x] Listagem detalhada de Leads por Tenant
 # LeadFlow
+# LeadFlow
