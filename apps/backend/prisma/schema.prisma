@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  users     User[]
+  leads     Lead[]
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("user") // admin, user
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Lead {
+  id          String   @id @default(uuid())
+  name        String
+  email       String?
+  phone       String?
+  source      String   // WhatsApp, Instagram, Facebook Ads, Google Ads, Form
+  status      String   @default("NEW") // NEW, CONTACTED, QUALIFIED, CLOSED
+  tag         String?  // Interessado, Curioso, Orçamento, Fechamento
+  intentScore Float?   // Score from 0 to 1 based on NLP
+  data        Json?    // Additional info from the source
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

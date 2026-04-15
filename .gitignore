@@ -1,0 +1,37 @@
+# Node.js
+node_modules/
+dist/
+.npm/
+npm-debug.log*
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+
+# NestJS
+dist/
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Prisma
+# Note: Keep the schema, but exclude generated client if outside node_modules
+# (In our case, it's inside node_modules)
+
+# Build artifacts
+build/
+bin/
+obj/
