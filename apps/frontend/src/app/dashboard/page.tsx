@@ -90,7 +90,7 @@ export default function DashboardPage() {
                           {lead.tag}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{(lead.intentScore * 100).toFixed(0)}%</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{lead.intentScore ? (lead.intentScore * 100).toFixed(0) : '0'}%</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(lead.createdAt).toLocaleDateString('pt-BR')}</td>
                     </tr>
                   ))

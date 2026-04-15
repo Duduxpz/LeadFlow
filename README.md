@@ -57,6 +57,26 @@ Rodar Frontend:
 npm run dev:frontend
 ```
 
+## 🌐 Deployment
+
+Esta aplicação é um monorepo e deve ser implantada separadamente:
+
+### 1. Backend (Ex: Render, Railway, Heroku)
+- **Root Directory:** `apps/backend`
+- **Build Command:** `npm install && npm run build`
+- **Start Command:** `npm run start:prod`
+- **Environment Variables:**
+  - `DATABASE_URL`: URL do seu banco PostgreSQL (Recomendado: Neon.tech)
+  - `JWT_SECRET`: Uma string aleatória segura
+  - `PORT`: 3000 (ou o que o serviço fornecer)
+
+### 2. Frontend (Ex: Vercel, Netlify)
+- **Root Directory:** `apps/frontend`
+- **Framework Preset:** `Next.js`
+- **Build Command:** `npm run build`
+- **Environment Variables:**
+  - `NEXT_PUBLIC_API_URL`: URL onde o seu backend foi hospedado (Ex: `https://seu-backend.onrender.com`)
+
 ## ✨ Funcionalidades do MVP
 
 - [x] Cadastro de Empresa e Usuário Admin
