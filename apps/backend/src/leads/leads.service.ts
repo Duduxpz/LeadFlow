@@ -1,67 +1,53 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { Injectable } from '@nestjs/common'
+import { leadsRepository, CreateLeadInput, UpdateLeadInput } from '../repositories/leads.repository'
+
+export interface ListLeadsQuery {
+  status?: string
+  origem?: string
+  page?: number
+  limit?: number
+}
 
 @Injectable()
 export class LeadsService {
-  constructor(private prisma: PrismaService) {}
-
-  async create(data: any, tenantId: string) {
-    const classification = this.classifyLead(data.message || '');
-
-    return this.prisma.lead.create({
-      data: {
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        source: data.source,
-        data: data.extra || {},
-        tenantId,
-        tag: classification.tag,
-        intentScore: classification.score,
-      },
-    });
+  async create(data: CreateLeadInput) {
+    return leadsRepository.create(data)
   }
 
-  async findAll(tenantId: string) {
-    return this.prisma.lead.findMany({
-      where: { tenantId },
-      orderBy: { createdAt: 'desc' },
-    });
+  async findAll(query: ListLeadsQuery) {
+    const page = query.page || 1
+    const limit = query.limit || 10
+    const skip = (page - 1) * limit
+
+    return leadsRepository.findAll({
+      status: query.status,
+      origem: query.origem,
+      skip,
+      take: limit,
+    })
   }
 
-  async findOne(id: string, tenantId: string) {
-    return this.prisma.lead.findFirst({
-      where: { id, tenantId },
-    });
+  async findById(id: string) {
+    return leadsRepository.findById(id)
   }
 
-  private classifyLead(message: string): { tag: string; score: number } {
-    const msg = message.toLowerCase();
+  async update(id: string, data: UpdateLeadInput) {
+    return leadsRepository.update(id, data)
+  }
 
-    // Simple keyword-based classification for MVP
-    if (
-      msg.includes('comprar') ||
-      msg.includes('fechar') ||
-      msg.includes('assinar')
-    ) {
-      return { tag: 'Fechamento', score: 0.9 };
-    }
-    if (
-      msg.includes('preço') ||
-      msg.includes('valor') ||
-      msg.includes('quanto custa') ||
-      msg.includes('orçamento')
-    ) {
-      return { tag: 'Orçamento', score: 0.7 };
-    }
-    if (
-      msg.includes('quero saber mais') ||
-      msg.includes('como funciona') ||
-      msg.includes('tenho interesse')
-    ) {
-      return { tag: 'Interessado', score: 0.5 };
-    }
+  async delete(id: string) {
+    return leadsRepository.delete(id)
+  }
 
-    return { tag: 'Curioso', score: 0.2 };
+  async moveToEtapa(leadId: string, etapaId: string) {
+    return leadsRepository.moveToEtapa(leadId, etapaId)
+  }
+
+  async addTag(leadId: string, tagId: string) {
+    return leadsRepository.addTag(leadId, tagId)
+  }
+
+  async removeTag(leadId: string, tagId: string) {
+    return leadsRepository.removeTag(leadId, tagId)
   }
 }

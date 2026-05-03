@@ -3,43 +3,127 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-model Tenant {
-  id        String   @id @default(uuid())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  users     User[]
-  leads     Lead[]
-}
-
-model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  name      String
-  role      String   @default("user") // admin, user
-  tenantId  String
-  tenant    Tenant   @relation(fields: [tenantId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
+// ============== Lead Management ==============
 
 model Lead {
-  id          String   @id @default(uuid())
-  name        String
+  id          String        @id @default(uuid())
+  nome        String
   email       String?
-  phone       String?
-  source      String   // WhatsApp, Instagram, Facebook Ads, Google Ads, Form
-  status      String   @default("NEW") // NEW, CONTACTED, QUALIFIED, CLOSED
-  tag         String?  // Interessado, Curioso, Orçamento, Fechamento
-  intentScore Float?   // Score from 0 to 1 based on NLP
-  data        Json?    // Additional info from the source
-  tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  telefone    String?
+  empresa     String?
+  status      String        @default("novo") // novo, contactado, qualificado, perdido, ganho
+  score       Float         @default(0)
+  origem      String        @default("formulario") // formulario, whatsapp, instagram, facebook, google
+  criadoEm    DateTime      @default(now())
+  atualizadoEm DateTime     @updatedAt
+  
+  // Relationships
+  etapas      LeadEtapa[]
+  atividades  Atividade[]
+  tags        LeadTag[]
+  
+  @@index([status])
+  @@index([origem])
+  @@index([criadoEm])
+}
+
+model Pipeline {
+  id          String   @id @default(uuid())
+  nome        String   @unique
+  descricao   String?
+  criadoEm    DateTime @default(now())
+  
+  etapas      Etapa[]
+  
+  @@index([nome])
+}
+
+model Etapa {
+  id          String   @id @default(uuid())
+  nome        String
+  ordem       Int      @default(0)
+  cor         String   @default("#3B82F6")
+  pipelineId  String
+  criadoEm    DateTime @default(now())
+  
+  pipeline    Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  leadEtapas  LeadEtapa[]
+  
+  @@unique([pipelineId, ordem])
+  @@index([pipelineId])
+}
+
+model LeadEtapa {
+  id        String   @id @default(uuid())
+  leadId    String
+  etapaId   String
+  movidoEm  DateTime @default(now())
+  
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  etapa     Etapa    @relation(fields: [etapaId], references: [id], onDelete: Cascade)
+  
+  @@unique([leadId, etapaId])
+  @@index([leadId])
+  @@index([etapaId])
+}
+
+// ============== Users & Auth ==============
+
+model Usuario {
+  id        String   @id @default(uuid())
+  nome      String
+  email     String   @unique
+  senha     String
+  role      String   @default("usuario") // admin, gerente, usuario
+  ativo     Boolean  @default(true)
+  criadoEm  DateTime @default(now())
+  
+  atividades Atividade[]
+  
+  @@index([email])
+}
+
+// ============== Activities ==============
+
+model Atividade {
+  id        String   @id @default(uuid())
+  tipo      String   // chamada, email, reuniao, nota, sms
+  descricao String
+  leadId    String
+  usuarioId String
+  criadaEm  DateTime @default(now())
+  
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
+  
+  @@index([leadId])
+  @@index([usuarioId])
+  @@index([criadaEm])
+}
+
+// ============== Tags ==============
+
+model Tag {
+  id        String   @id @default(uuid())
+  nome      String   @unique
+  cor       String   @default("#9CA3AF")
+  
+  leads     LeadTag[]
+}
+
+model LeadTag {
+  id      String @id @default(uuid())
+  leadId  String
+  tagId   String
+  
+  lead    Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  tag     Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@unique([leadId, tagId])
+  @@index([leadId])
+  @@index([tagId])
 }
