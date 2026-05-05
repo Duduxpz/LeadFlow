@@ -7,11 +7,40 @@ import { JwtService } from '@nestjs/jwt';
 import { prisma } from '../lib/db';
 import * as bcrypt from 'bcrypt';
 
+// DTO Interfaces
+interface RegisterDto {
+  nome: string;
+  email: string;
+  senha: string;
+}
+
+interface LoginDto {
+  email: string;
+  senha: string;
+}
+
+interface UsuarioResponse {
+  id: string;
+  nome: string;
+  email: string;
+  role: string;
+}
+
+interface LoginResponse {
+  access_token: string;
+  usuario: UsuarioResponse;
+}
+
+interface RegisterResponse extends UsuarioResponse {
+  ativo: boolean;
+  criadoEm: Date;
+}
+
 @Injectable()
 export class AuthService {
   constructor(private jwtService: JwtService) {}
 
-  async register(data: any) {
+  async register(data: RegisterDto): Promise<RegisterResponse> {
     const { nome, email, senha } = data;
 
     const usuarioExists = await prisma.usuario.findUnique({
@@ -34,10 +63,10 @@ export class AuthService {
     });
 
     const { senha: _, ...result } = usuario;
-    return result;
+    return result as RegisterResponse;
   }
 
-  async login(data: any) {
+  async login(data: LoginDto): Promise<LoginResponse> {
     const { email, senha } = data;
 
     const usuario = await prisma.usuario.findUnique({
