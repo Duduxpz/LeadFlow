@@ -3,12 +3,11 @@
 import { useState } from 'react';
 import api from '@/lib/api';
 
-export default function LeadForm({ tenantId }: { tenantId: string }) {
+export default function LeadForm({ leadId }: { leadId?: string }) {
   const [formData, setFormData] = useState({
-    name: '',
+    nome: '',
     email: '',
-    phone: '',
-    message: '',
+    telefone: '',
   });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
@@ -16,9 +15,11 @@ export default function LeadForm({ tenantId }: { tenantId: string }) {
     e.preventDefault();
     setStatus('loading');
     try {
-      await api.post(`/webhooks/capture/${tenantId}?source=Formulário Site`, formData);
+      const endpoint = leadId ? `/webhooks/capture/${leadId}` : '/api/leads';
+      const source = 'formulario_site';
+      await api.post(`${endpoint}?source=${source}`, formData);
       setStatus('success');
-      setFormData({ name: '', email: '', phone: '', message: '' });
+      setFormData({ nome: '', email: '', telefone: '' });
     } catch (err) {
       console.error(err);
       setStatus('error');
@@ -44,8 +45,8 @@ export default function LeadForm({ tenantId }: { tenantId: string }) {
           type="text"
           required
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          value={formData.nome}
+          onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
         />
       </div>
       <div>
@@ -63,17 +64,8 @@ export default function LeadForm({ tenantId }: { tenantId: string }) {
         <input
           type="text"
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-          value={formData.phone}
-          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Como podemos ajudar?</label>
-        <textarea
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-          rows={3}
-          value={formData.message}
-          onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+          value={formData.telefone}
+          onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
         />
       </div>
       <button

@@ -4,82 +4,69 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '../prisma/prisma.service';
+import { prisma } from '../lib/db';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private prisma: PrismaService,
-    private jwtService: JwtService,
-  ) {}
+  constructor(private jwtService: JwtService) {}
 
   async register(data: any) {
-    const { companyName, name, email, password } = data;
+    const { nome, email, senha } = data;
 
-    const userExists = await this.prisma.user.findUnique({
+    const usuarioExists = await prisma.usuario.findUnique({
       where: { email },
     });
 
-    if (userExists) {
+    if (usuarioExists) {
       throw new ConflictException('Usuário já existe');
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedSenha = await bcrypt.hash(senha, 10);
 
-    return this.prisma.$transaction(async (tx) => {
-      const tenant = await tx.tenant.create({
-        data: { name: companyName },
-      });
-
-      const user = await tx.user.create({
-        data: {
-          name,
-          email,
-          password: hashedPassword,
-          tenantId: tenant.id,
-          role: 'admin',
-        },
-      });
-
-      const { password: _, ...result } = user;
-      return result;
+    const usuario = await prisma.usuario.create({
+      data: {
+        nome,
+        email,
+        senha: hashedSenha,
+        role: 'usuario',
+      },
     });
+
+    const { senha: _, ...result } = usuario;
+    return result;
   }
 
   async login(data: any) {
-    const { email, password } = data;
+    const { email, senha } = data;
 
-    const user = await this.prisma.user.findUnique({
+    const usuario = await prisma.usuario.findUnique({
       where: { email },
-      include: { tenant: true },
     });
 
-    if (!user) {
+    if (!usuario) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isSenhaValid = await bcrypt.compare(senha, usuario.senha);
 
-    if (!isPasswordValid) {
+    if (!isSenhaValid) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
     const payload = {
-      sub: user.id,
-      email: user.email,
-      tenantId: user.tenantId,
-      role: user.role,
+      sub: usuario.id,
+      email: usuario.email,
+      role: usuario.role,
     };
 
     return {
       access_token: await this.jwtService.signAsync(payload),
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        tenantId: user.tenantId,
-        tenantName: user.tenant.name,
+      usuario: {
+        id: usuario.id,
+        nome: usuario.nome,
+        email: usuario.email,
+        role: usuario.role,
       },
     };
   }

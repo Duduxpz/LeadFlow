@@ -7,16 +7,16 @@ import Link from 'next/link';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [senha, setSenha] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await api.post('/auth/login', { email, password });
+      const response = await api.post('/auth/login', { email, senha });
       localStorage.setItem('leadflow_token', response.data.access_token);
-      localStorage.setItem('leadflow_user', JSON.stringify(response.data.user));
+      localStorage.setItem('leadflow_user', JSON.stringify(response.data.usuario));
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erro ao fazer login');
@@ -53,8 +53,8 @@ export default function LoginPage() {
                 required
                 className="relative block w-full rounded-b-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 px-3"
                 placeholder="Senha"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
               />
             </div>
           </div>

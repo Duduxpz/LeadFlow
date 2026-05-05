@@ -1,22 +1,21 @@
-/* eslint-disable */
-import { PrismaClient } from '@prisma/client'
-import * as bcrypt from 'bcrypt'
+import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting database seed...')
+  console.log('🌱 Starting database seed...');
 
   try {
     // Clear existing data
-    await prisma.leadTag.deleteMany({})
-    await prisma.leadEtapa.deleteMany({})
-    await prisma.atividade.deleteMany({})
-    await prisma.lead.deleteMany({})
-    await prisma.etapa.deleteMany({})
-    await prisma.tag.deleteMany({})
-    await prisma.pipeline.deleteMany({})
-    await prisma.usuario.deleteMany({})
+    await prisma.leadTag.deleteMany({});
+    await prisma.leadEtapa.deleteMany({});
+    await prisma.atividade.deleteMany({});
+    await prisma.lead.deleteMany({});
+    await prisma.etapa.deleteMany({});
+    await prisma.tag.deleteMany({});
+    await prisma.pipeline.deleteMany({});
+    await prisma.usuario.deleteMany({});
 
     // Create Users
     const users = await Promise.all([
@@ -46,7 +45,7 @@ async function main() {
       }),
     ])
 
-    console.log('✅ Created 3 users')
+    console.log('✅ Created 3 users');
 
     // Create Tags
     const tags = await Promise.all([
@@ -55,9 +54,9 @@ async function main() {
       prisma.tag.create({ data: { nome: 'Orçamento Enviado', cor: '#3B82F6' } }),
       prisma.tag.create({ data: { nome: 'Perdido', cor: '#EF4444' } }),
       prisma.tag.create({ data: { nome: 'VIP', cor: '#8B5CF6' } }),
-    ])
+    ]);
 
-    console.log('✅ Created 5 tags')
+    console.log('✅ Created 5 tags');
 
     // Create Pipelines
     const pipeline1 = await prisma.pipeline.create({
@@ -65,16 +64,16 @@ async function main() {
         nome: 'Pipeline de Vendas',
         descricao: 'Pipeline para gerenciar prospects e deals',
       },
-    })
+    });
 
     const pipeline2 = await prisma.pipeline.create({
       data: {
         nome: 'Pipeline de Suporte',
         descricao: 'Pipeline para gerenciar tickets de suporte',
       },
-    })
+    });
 
-    console.log('✅ Created 2 pipelines')
+    console.log('✅ Created 2 pipelines');
 
     // Create Etapas for Pipeline 1
     const etapas1 = await Promise.all([
@@ -164,7 +163,7 @@ async function main() {
       }),
     ])
 
-    console.log('✅ Created 10 etapas (5 per pipeline)')
+    console.log('✅ Created 10 etapas (5 per pipeline)');
 
     // Create Sample Leads
     const leads = await Promise.all([
@@ -390,24 +389,24 @@ async function main() {
       }),
     ])
 
-    console.log('✅ Created 20 sample leads')
+    console.log('✅ Created 20 sample leads');
 
     // Assign leads to etapas randomly
     for (const lead of leads) {
       const randomEtapa =
         Math.random() > 0.5
           ? etapas1[Math.floor(Math.random() * etapas1.length)]
-          : etapas2[Math.floor(Math.random() * etapas2.length)]
+          : etapas2[Math.floor(Math.random() * etapas2.length)];
 
       await prisma.leadEtapa.create({
         data: {
           leadId: lead.id,
           etapaId: randomEtapa.id,
         },
-      })
+      });
     }
 
-    console.log('✅ Assigned leads to etapas')
+    console.log('✅ Assigned leads to etapas');
 
     // Assign random tags to leads
     for (const lead of leads.slice(0, 15)) {
@@ -444,20 +443,20 @@ async function main() {
             leadId: lead.id,
             usuarioId: users[Math.floor(Math.random() * users.length)].id,
           },
-        })
+        });
       }
     }
 
-    console.log('✅ Created sample activities')
+    console.log('✅ Created sample activities');
 
-    console.log('🎉 Database seeded successfully!')
+    console.log('🎉 Database seeded successfully!');
   } catch (error) {
-    console.error('❌ Error seeding database:', error)
-    process.exit(1)
+    console.error('❌ Error seeding database:', error);
+    process.exit(1);
   }
 }
 
 main()
   .finally(async () => {
-    await prisma.$disconnect()
-  })
+    await prisma.$disconnect();
+  });

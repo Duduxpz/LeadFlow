@@ -7,15 +7,14 @@ import Link from 'next/link';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
-    companyName: '',
-    name: '',
+    nome: '',
     email: '',
-    password: '',
+    senha: '',
   });
   const [error, setError] = useState('');
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) {
     e.preventDefault();
     try {
       await api.post('/auth/register', formData);
@@ -44,19 +43,9 @@ export default function RegisterPage() {
                 type="text"
                 required
                 className="relative block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 px-3"
-                placeholder="Nome da Empresa"
-                value={formData.companyName}
-                onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-              />
-            </div>
-            <div>
-              <input
-                type="text"
-                required
-                className="relative block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 px-3"
-                placeholder="Seu Nome"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Seu Nome Completo"
+                value={formData.nome}
+                onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
               />
             </div>
             <div>
@@ -75,8 +64,8 @@ export default function RegisterPage() {
                 required
                 className="relative block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 px-3"
                 placeholder="Senha"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                value={formData.senha}
+                onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
               />
             </div>
           </div>

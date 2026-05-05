@@ -1,30 +1,53 @@
-import { Controller, Post, Body, Param, Query } from '@nestjs/common';
+import { Controller, Post, Body, Param, Query, HttpException, HttpStatus } from '@nestjs/common';
 import { LeadsService } from './leads.service';
 
 @Controller('webhooks')
 export class WebhooksController {
   constructor(private readonly leadsService: LeadsService) {}
 
-  @Post('capture/:tenantId')
+  @Post('capture/:id')
   async capture(
-    @Param('tenantId') tenantId: string,
+    @Param('id') leadId: string,
     @Body() leadData: any,
     @Query('source') source: string,
   ) {
-    // Basic mapping from common webhook formats
-    const mappedLead = {
-      name:
-        leadData.name ||
-        leadData.fullName ||
-        leadData.first_name ||
-        'Desconhecido',
-      email: leadData.email || leadData.email_address,
-      phone: leadData.phone || leadData.phone_number || leadData.whatsapp,
-      message: leadData.message || leadData.text || leadData.body || '',
-      source: source || leadData.source || 'Webhook',
-      extra: leadData,
-    };
+    try {
+      // Basic mapping from common webhook formats to our model
+      const mappedLead = {
+        nome: leadData.name || leadData.fullName || leadData.nome || 'Desconhecido',
+        email: leadData.email || leadData.email_address || leadData.email,
+        telefone: leadData.phone || leadData.phone_number || leadData.whatsapp || leadData.telefone,
+        empresa: leadData.company || leadData.empresa,
+        status: leadData.status || 'novo',
+        origem: source || leadData.source || leadData.origem || 'webhook',
+      };
 
-    return this.leadsService.create(mappedLead, tenantId);
+      // Remove undefined fields
+      Object.keys(mappedLead).forEach((key) => {
+        if (mappedLead[key] === undefined) {
+          delete mappedLead[key];
+        }
+      });
+
+      const result = await this.leadsService.create(mappedLead);
+
+      return {
+        data: result,
+        error: null,
+        meta: {
+          timestamp: new Date().toISOString(),
+          created: true,
+        },
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          data: null,
+          error: error.message || 'Erro ao capturar lead do webhook',
+          meta: null,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 }
